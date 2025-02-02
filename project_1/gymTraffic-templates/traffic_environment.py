@@ -32,7 +32,7 @@ class TrafficEnv(gym.Env):
         self.max_cars_total = max_cars_total
         self.lambda_ns = lambda_ns
         self.lambda_ew = lambda_ew
-
+        self.cars_leaving = cars_leaving
         # set the rewards function
         self.rewards = rewards
 
@@ -109,7 +109,19 @@ class TrafficEnv(gym.Env):
         Returns:
             float: The calculated reward based on the given state.
         """
-        pass
+        reward = 0
+
+        if (ns + ew) < self.max_cars_total and ns <self.max_cars_dir and ew <self.max_cars_dir:
+            reward = 50 #r1 80 r250
+        else:
+            reward = -30
+
+        if ns == 0 and ew == 0:  # incentivize to clear intersection
+            reward = 100 #r1 30 r2 100
+
+        return reward
+
+
 
     def is_terminal(self, ns, ew):
         """
@@ -122,7 +134,10 @@ class TrafficEnv(gym.Env):
         Returns:
             bool: True if the state is terminal, False otherwise.
         """
-        pass
+        if ns==0 and ew==0:
+            return True
+        else:
+            return False
 
     def is_truncated(self):
         """
@@ -131,7 +146,10 @@ class TrafficEnv(gym.Env):
         Returns:
             bool: True if the maximum number of steps has been reached, False otherwise.
         """
-        pass
+        if self.current_step >= self.max_steps:
+            return True
+        else:
+            return False
 
     def step(self, action):
         """
@@ -148,7 +166,27 @@ class TrafficEnv(gym.Env):
                 - truncated (bool): Whether the episode was truncated due to reaching the max number of steps.
                 - dict: Additional information, such as the probability of the transition.
         """
-        pass
+
+        # if action == 0: #do nothing
+        #     pass
+        # elif action == 1: #switch light state
+        #     self.s=(self.s[0],self.s[1],1-self.s[2])
+        #
+        # ns,ew,light = self.s #current state after updating light
+        #
+        # if light==1:
+        #     ns=max(0,ns-self.cars_leaving)
+        # else:
+        #     ew=max(0,ew-self.cars_leaving)
+        self.sim.advance(action)
+        ns, ew, light, _ = self.sim.get_world_state()
+
+        r = self.get_rewards(ns, ew, light)
+        done = self.is_terminal(ns, ew)
+        self.current_step += 1
+        truncated=self.is_truncated()
+        self.s=(ns,ew,light)
+        return (self.s,r,done,truncated,{})
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         """Reset the environment to an initial state."""

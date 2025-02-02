@@ -3,6 +3,7 @@ import numpy as np
 from typing import Optional
 import gymnasium as gym
 from gymnasium import spaces
+import random
 
 from robot_simulator import RobotSim
 from robot_simulator import RobotRenderer
@@ -60,11 +61,19 @@ class RobotEnv(gym.Env):
         self.prob_success = prob_success
         self.prob_fail = (1.0 - self.prob_success) / (self.action_space.n - 1)
 
+        self.prev_dist2target = None #distance
+        self.last_state = None
+        # Track the state sequence and oscillation count
+        self.state_sequence = []  # To track the sequence of states visited in an episode
+        self.oscillation_penalty = -5  # Penalty for oscillation
+        self.oscillation_threshold = 2  # Number of oscillations before penalizing
+
         # initialize simulator with environment parameters
         self.sim = RobotSim(n_rows, n_cols, self.warehouse_workers, self.warehouse_equipment, self.goal, self.start)
 
         # initialize the state
         self.s = self.sim.get_world_state()
+
 
         # initialize renderer
         self.renderer = None
@@ -87,9 +96,6 @@ class RobotEnv(gym.Env):
         self.current_step = 0
         self.renderer = RobotRenderer(self.sim)
         self.s = self.sim.get_world_state()
-
-        if return_info:
-            return self.encode_observation(self.s), {}
         return self.encode_observation(self.s)
 
     def sample_action(self, action):
@@ -102,7 +108,14 @@ class RobotEnv(gym.Env):
         Returns:
             tuple: A tuple containing the probability and the action actually taken.
         """
-        pass
+        if np.random.uniform(0, 1) < self.prob_success:
+            # success
+            return self.prob_success, action
+        else:
+            # choose random action not chosen by agent
+            possible_actions = [a for a in range(self.action_space.n) if a != action]
+            action = random.choice(possible_actions)
+            return self.prob_fail, action
 
     def step(self, action):
         """
@@ -118,7 +131,29 @@ class RobotEnv(gym.Env):
             bool: Whether the episode has ended due to truncation (max steps reached).
             dict: Additional information such as the probability of the action being taken.
         """
-        pass
+        self.sim.advance(action)
+        bumped=self.sim.bumped
+        r=self.get_rewards(bumped)
+        done=self.is_terminal(bumped)
+        truncated = self.is_truncated()
+        world_state=self.sim.get_world_state()
+        new_state=self.encode_observation(world_state)
+        self.state_sequence.append(new_state)
+
+        # if len(self.state_sequence) > 2:  # Ensure at least 2 states are present to check oscillation
+        #     prev_state = self.state_sequence[-3]  # The state before the last two
+        #     current_state = self.state_sequence[-2]  # The last state
+        #     if np.array_equal(current_state, prev_state):  # Detected oscillation (same state)
+        #         r += self.oscillation_penalty  # Apply oscillation penalty
+
+        self.last_state=self.s
+
+        self.s = self.sim.get_world_state()
+
+
+        self.current_step += 1
+
+        return new_state, r, done, truncated,{'bumped_status': bumped}
 
     def get_rewards(self, bumped):
         """
@@ -130,7 +165,48 @@ class RobotEnv(gym.Env):
         Returns:
             float: The reward based on the current state and the object bumped into.
         """
-        pass
+        reward=0
+        target_row, target_col = self.goal
+        dist2target = np.abs(target_row - self.sim.row) + np.abs(target_col - self.sim.col)
+        prev_dist2target = self.prev_dist2target if self.prev_dist2target is not None else dist2target
+
+        # print("dist2target",dist2target)
+        # print("prev_dist2target",prev_dist2target)
+
+        # if bumped == "":
+        #     reward = 2
+        # elif bumped == "target":
+        #     reward = 100
+        # elif bumped in ["equipment","wall"]:
+        #     reward= -10
+        # elif bumped == "worker":
+        #     reward= -20
+        #
+        # # if self.s == self.last_state:
+        # #     reward = -5
+        #
+        # if dist2target < prev_dist2target:
+        #     reward += 5  # Bonus for getting closer to the target
+        # elif dist2target >= prev_dist2target:
+        #     reward -= 9
+        #
+        # self.prev_dist2target = dist2target
+
+        if dist2target < prev_dist2target:
+            if bumped == "":
+                reward = 2
+            elif bumped == "target":
+                reward = 100
+            elif bumped in ["equipment","wall"]:
+                reward= -10
+            elif bumped == "worker":
+                reward= -20
+        else:
+            reward=-10
+
+        self.prev_dist2target = dist2target
+
+        return reward
 
     def is_truncated(self):
         """
@@ -139,7 +215,10 @@ class RobotEnv(gym.Env):
         Returns:
             bool: True if the maximum number of steps has been reached, False otherwise.
         """
-        pass
+        if self.current_step >= self.max_steps:
+            return True
+        else:
+            return False
 
     def is_terminal(self, bumped):
         """
@@ -151,7 +230,10 @@ class RobotEnv(gym.Env):
         Returns:
             bool: True if the state is terminal, False otherwise.
         """
-        pass
+        if bumped in ["worker"]:
+            return True
+        else:
+            return False
 
 
     def render(self, close=False):

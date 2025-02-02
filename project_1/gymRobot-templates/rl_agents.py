@@ -1,5 +1,7 @@
 import numpy as np
-
+import random
+import time
+import matplotlib.pyplot as plt
 class Agent:
     """
     Base RL agent class for Q-Learning and SARSA.
@@ -25,9 +27,11 @@ class Agent:
         self.num_workers = len(self.env.warehouse_workers)
         self.total_states = self.calculate_total_states()
         self.q_table = np.zeros((self.total_states, self.env.action_space.n))
-
+        self.noise_scale = 0.1  # For adding noise
+        self.temperature = 1  # For softmax
         # initialize cache for indices
         self.index_cache = {}
+        self.policy_changes_list = []
 
     def calculate_total_states(self):
         """
@@ -84,7 +88,13 @@ class Agent:
         Returns:
             int: The action chosen by the agent.
         """
-        pass
+        state_index = self.get_qtable_index(state)
+        if np.random.uniform(0, 1)<self.epsilon:
+            action = self.env.action_space.sample()
+        else:
+            action=np.argmax(self.q_table[state_index])
+
+        return action
 
 
 class QLearningAgent(Agent):
@@ -97,7 +107,43 @@ class QLearningAgent(Agent):
         Returns:
             np.ndarray: The updated Q-table after training.
         """
-        pass
+        start_time = time.time()
+        for episode in range(self.episodes):
+
+            state = self.env.reset()
+            done = False
+            print("episode", episode)
+            policy_changes = 0
+            while not done:
+                # print("state1")
+                # print(state)
+                state_index = self.get_qtable_index(state)
+                action = self.choose_action(state)
+                # print("action")
+                # print(action)
+                observation, reward, done, truncated, info = self.env.step(action)
+                next_state_index = self.get_qtable_index(observation)
+                # print("observation")
+                # print(observation)
+                if done or truncated:
+                    self.epsilon *= self.epsilon_decay
+                    break
+
+                self.learn(state, action, reward, observation, done)
+
+                if np.argmax(self.q_table[state_index]) != np.argmax(self.q_table[next_state_index]):
+                    policy_changes += 1
+
+                state = observation
+
+            self.policy_changes_list.append(policy_changes)
+            self.epsilon *= self.epsilon_decay
+
+        end_time = time.time()
+        print(f"QL Converged in {end_time - start_time} seconds.")
+        plot_policy_stability(self.policy_changes_list, "Robot_Qlearning_policy_stability.png",algo="QL")
+
+        return self.q_table
 
     def learn(self, state, action, reward, next_state, done):
         """
@@ -113,7 +159,18 @@ class QLearningAgent(Agent):
         Returns:
             None
         """
-        pass
+        state_index = self.get_qtable_index(state)
+
+        # print("state")
+        # print(state)
+        # print('state_index')
+        # print(state_index)
+        # print("next_state")
+        # print(next_state)
+        next_state_index = self.get_qtable_index(next_state)
+
+        max_Q = np.max(self.q_table[next_state_index]) if not done else 0
+        self.q_table[state_index][action] += self.alpha * (reward + self.gamma * max_Q - self.q_table[state_index][action])
 
 
 class SARSAgent(Agent):
@@ -126,9 +183,49 @@ class SARSAgent(Agent):
         Returns:
             np.ndarray: The updated Q-table after training.
         """
-        pass
+        start_time = time.time()
+        for episode in range(self.episodes):
+            print("episode", episode)
+            state = self.env.reset()
+            done = False
+            policy_changes = 0
 
-    def learn(self, state, action, reward, next_state, done):
+            action = self.choose_action(state)
+            while not done:
+                # print("done", done)
+                observation, reward, done, truncated, info = self.env.step(action)
+                next_action = self.choose_action(observation)
+                self.learn(state, action, reward, observation, done, next_action)
+
+                if action != next_action:
+                    policy_changes += 1
+
+                state = observation
+                action = next_action
+
+                state_index = self.get_qtable_index(state)
+                next_state_index = self.get_qtable_index(observation)
+
+                # if np.argmax(self.q_table[state_index]) != np.argmax(self.q_table[next_state_index]):
+                #     policy_changes += 1
+
+                if done or truncated:
+                    state_index = state_index = self.get_qtable_index(state)
+                    self.q_table[state_index] = 0
+                    self.epsilon *= self.epsilon_decay
+                    break
+            self.policy_changes_list.append(policy_changes)
+            self.epsilon *= self.epsilon_decay
+
+        end_time = time.time()
+
+        print(f"SARSA Converged in {end_time - start_time} seconds.")
+
+        plot_policy_stability(self.policy_changes_list, "Robot_SARSA_policy_stability.png", algo="SARSA")
+
+        return self.q_table
+
+    def learn(self, state, action, reward, next_state, done,next_action):
         """
         Update the Q-table using the SARSA algorithm.
 
@@ -142,4 +239,25 @@ class SARSAgent(Agent):
         Returns:
             None
         """
-        pass
+        state_index = self.get_qtable_index(state)
+
+        # next_action = self.choose_action(next_state)
+        next_state_index = self.get_qtable_index(next_state)
+
+        max_Q = self.q_table[next_state_index][next_action] if not done else 0
+        self.q_table[state_index][action] += self.alpha * (reward + self.gamma * max_Q - self.q_table[state_index][action])
+
+def plot_policy_stability(policy_stability_list, filename,algo):
+    """
+    Plot policy stability across iterations of Value Iteration.
+    Tracks the number of times the policy changes.
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(policy_stability_list, label="Policy Changes", color='b')
+    plt.xlabel('Iteration Number')
+    plt.ylabel('Policy Changes')
+    plt.title('Policy Stability Across Iterations of '+ algo)
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(filename)
+    #plt.show()
