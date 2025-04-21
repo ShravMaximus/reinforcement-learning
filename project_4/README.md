@@ -38,9 +38,10 @@ P4_deepracer/
 
 Demo Videos
 
-[Watch Time-Trial Demo](demos/reInvent2019_wide-time_trial-ppo_agent-episode-0.mp4)
-[Watch Head-to-Bot Demo](demos/reInvent2019_wide-head_to_bot-ppo_agent-episode-0.mp4)
-[Watch Obstacle-avoidance Demo](demos/reInvent2019_wide-obstacle_avoidance-ppo_agent-episode-0.mp4)
+[Watch Time-Trial Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/e2c56117-6ce2-4a14-bb62-faedc967f15b
+[Watch Head-to-Bot Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/9ae6baad-dba9-4c7d-8e02-c9fae59ae7b1
+[Watch Obstacle-avoidance Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/ffa18b3e-1b23-4baf-b218-a782fe5db618
+
 
 
 ```
