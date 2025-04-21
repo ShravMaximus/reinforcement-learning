@@ -38,17 +38,17 @@ P4_deepracer/
 
 Demo Videos
 
-[Watch Time-Trial Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/e2c56117-6ce2-4a14-bb62-faedc967f15b
+[Watch Time-Trial Demo] 
 
-[Watch Head-to-Bot Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/9ae6baad-dba9-4c7d-8e02-c9fae59ae7b1
+https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/e2c56117-6ce2-4a14-bb62-faedc967f15b
 
-[Watch Obstacle-avoidance Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/ffa18b3e-1b23-4baf-b218-a782fe5db618
+[Watch Head-to-Bot Demo] 
 
+https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/9ae6baad-dba9-4c7d-8e02-c9fae59ae7b1
 
-[Watch Head-to-Bot Demo]
-https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/0129984c-c5a1-493e-b88c-e9698bad7706
+[Watch Obstacle-avoidance Demo] 
 
-
+https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/ffa18b3e-1b23-4baf-b218-a782fe5db618
 
 ```
 - `agents.py`: Contains the implementation of the PPO Algorithm 
