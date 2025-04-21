@@ -10,7 +10,7 @@ The objective in this project is to train an autonomous racing agent to successf
 
 [UPDATED] The main files of the implementations are organized as follows:
 
-P4_deepracer/src/
+<pre> ```P4_deepracer/src/
 ├── agents.py
 ├── run.py
 
@@ -34,12 +34,14 @@ P4_deepracer/
 ├── visual.py
 ├── training_logs_part1_tt.txt
 ├── training_logs_part2_bots.txt
-├── training_logs_part2_obs.txt
+├── training_logs_part2_obs.txt``` </pre>
 
 Demo Videos
 
 [Watch Time-Trial Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/e2c56117-6ce2-4a14-bb62-faedc967f15b
+
 [Watch Head-to-Bot Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/9ae6baad-dba9-4c7d-8e02-c9fae59ae7b1
+
 [Watch Obstacle-avoidance Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/ffa18b3e-1b23-4baf-b218-a782fe5db618
 
 
