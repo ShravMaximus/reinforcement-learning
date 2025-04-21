@@ -45,7 +45,7 @@ Demo Videos
 [Watch Obstacle-avoidance Demo] https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/ffa18b3e-1b23-4baf-b218-a782fe5db618
 
 
-
+[Watch Head-to-Bot Demo]
 https://github.gatech.edu/gt-omscs-rldm/7642RLDMSpring2025sbhatnagar45/assets/82298/0129984c-c5a1-493e-b88c-e9698bad7706
 
 
